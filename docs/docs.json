@@ -1,0 +1,47 @@
+{
+	"$schema": "https://mintlify.com/docs.json",
+	"theme": "linden",
+	"name": "astro-asciinema",
+	"description": "Embed asciinema terminal recordings in Astro sites.",
+	"colors": {
+		"primary": "#ef4444",
+		"dark": "#ef4444",
+		"light": "#ef4444"
+	},
+	"appearance": {
+		"default": "system"
+	},
+	"icons": {
+		"library": "lucide"
+	},
+	"navigation": {
+		"pages": [
+			"index",
+			{
+				"group": "Getting started",
+				"pages": ["installation", "quickstart"]
+			},
+			{
+				"group": "Guides",
+				"pages": ["guides/theme-watching"]
+			},
+			{
+				"group": "Reference",
+				"pages": ["reference/component"]
+			}
+		]
+	},
+	"navbar": {
+		"links": [
+			{
+				"type": "github",
+				"href": "https://github.com/nhedger/astro-asciinema"
+			}
+		],
+		"primary": {
+			"type": "button",
+			"label": "View on npmx",
+			"href": "https://npmx.dev/package/astro-asciinema"
+		}
+	}
+}

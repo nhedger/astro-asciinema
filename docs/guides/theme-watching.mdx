@@ -1,0 +1,172 @@
+---
+title: "Theme watching"
+description: "Keep an Asciinema player's colors in sync with your site's light and dark themes."
+icon: "sun-moon"
+---
+
+As of the current Asciinema player version, a mounted player does not
+automatically update its colors when the user's theme changes. Asciinema reads a
+custom theme's CSS properties only when the player mounts, so changing a media
+query, class, or attribute does not update an existing player.
+
+`astro-asciinema` solves this by watching the same signal your site uses to
+change themes and remounting the player with the new palette. Set `theme-source`
+to identify that signal. The component preserves the current playback time and
+resumes the recording if it was playing.
+
+<Info>
+  `options.theme` selects the Asciinema theme. `theme-source` tells the component
+  what to watch for changes. Your CSS still defines the light and dark palettes.
+</Info>
+
+## Strategies
+
+Choose the strategy that matches how your site controls its color scheme.
+
+| Your site uses | `theme-source` | Behavior |
+| --- | --- | --- |
+| The operating system preference | Omit it or use `"media"` | Watches `(prefers-color-scheme: dark)` |
+| A class on `<html>` | `"class"` or `{ class: "night" }` | Remounts when the class is added or removed |
+| An attribute on `<html>` | `"data-theme"` or `{ attribute: "data-color-scheme" }` | Remounts when the attribute value changes |
+| One player theme for every color scheme | Omit it | Uses the selected theme as the fallback palette |
+
+### Follow the operating system preference
+
+Use the default `"media"` strategy when your site follows
+`prefers-color-scheme`. Define both palettes under the same Asciinema theme
+name:
+
+```css
+.asciinema-player-theme-site {
+	--term-color-foreground: #171717;
+	--term-color-background: #f5f5f5;
+}
+
+@media (prefers-color-scheme: dark) {
+	.asciinema-player-theme-site {
+		--term-color-foreground: #f5f5f5;
+		--term-color-background: #262626;
+	}
+}
+```
+
+Select the `site` theme. You can omit `theme-source` because `"media"` is the
+default:
+
+```astro
+<Asciinema src={Demo} options={{ theme: "site" }} />
+```
+
+### Watch a class
+
+Use `"class"` when your site adds or removes `dark` on the root element:
+
+```css
+.asciinema-player-theme-site {
+	--term-color-foreground: #171717;
+	--term-color-background: #f5f5f5;
+}
+
+html.dark .asciinema-player-theme-site {
+	--term-color-foreground: #f5f5f5;
+	--term-color-background: #262626;
+}
+```
+
+```astro
+<Asciinema
+	src={Demo}
+	options={{ theme: "site" }}
+	theme-source="class"
+/>
+```
+
+For another class name, pass the name and use the same class in your CSS:
+
+```astro
+<Asciinema
+	src={Demo}
+	options={{ theme: "site" }}
+	theme-source={{ class: "night" }}
+/>
+```
+
+```css
+.asciinema-player-theme-site {
+	--term-color-foreground: #171717;
+	--term-color-background: #f5f5f5;
+}
+
+html.night .asciinema-player-theme-site {
+	--term-color-foreground: #f5f5f5;
+	--term-color-background: #262626;
+}
+```
+
+### Watch an attribute
+
+Use `"data-theme"` when your site changes the `data-theme` attribute on the root
+element. The component reacts to any value, so your CSS controls which values
+select each palette:
+
+```astro
+<Asciinema
+	src={Demo}
+	options={{ theme: "site" }}
+	theme-source="data-theme"
+/>
+```
+
+```css
+.asciinema-player-theme-site {
+	--term-color-foreground: #171717;
+	--term-color-background: #f5f5f5;
+}
+
+html[data-theme="night"] .asciinema-player-theme-site {
+	--term-color-foreground: #f5f5f5;
+	--term-color-background: #262626;
+}
+```
+
+For another attribute, pass its name and target it in your CSS:
+
+```astro
+<Asciinema
+	src={Demo}
+	options={{ theme: "site" }}
+	theme-source={{ attribute: "data-color-scheme" }}
+/>
+```
+
+```css
+.asciinema-player-theme-site {
+	--term-color-foreground: #171717;
+	--term-color-background: #f5f5f5;
+}
+
+html[data-color-scheme="night"] .asciinema-player-theme-site {
+	--term-color-foreground: #f5f5f5;
+	--term-color-background: #262626;
+}
+```
+
+### Use a single player theme
+
+When the player uses the same palette in every site color scheme, select the
+theme with `options.theme` and omit `theme-source`. No additional theme
+configuration is required:
+
+```astro
+<Asciinema
+	src={Demo}
+	options={{ theme: "dracula" }}
+/>
+```
+
+## Complete the palette
+
+The examples use foreground and background colors to show the theme-switching
+mechanism. Define the complete ANSI palette for a production theme. See
+[custom themes in the Asciinema
+documentation](https://docs.asciinema.org/manual/player/themes/#custom-themes).

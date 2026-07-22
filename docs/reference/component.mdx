@@ -1,0 +1,68 @@
+---
+title: "Component reference"
+description: "Reference for the Astro Asciinema component props and theme-source values."
+icon: "braces"
+---
+
+Import the named `Asciinema` component from the package root:
+
+<CodeGroup>
+```astro Astro
+---
+import { Asciinema } from "astro-asciinema";
+---
+```
+
+```mdx MDX
+import { Asciinema } from "astro-asciinema"
+```
+</CodeGroup>
+
+## Props
+
+<ParamField body="src" type="string" required>
+  URL of an asciicast or another recording format supported by Asciinema player.
+  Importing a local recording with `?url` produces a suitable value.
+</ParamField>
+
+<ParamField body="options" type='Omit<Options, "logger">'>
+  Serializable [Asciinema player
+  options](https://docs.asciinema.org/manual/player/options/). The component
+  passes these options to `AsciinemaPlayer.create` in the browser.
+</ParamField>
+
+<ParamField body="theme-source" type="ThemeSource | false" default="media">
+  Source to watch for theme changes. When it changes, the component remounts the
+  player and preserves its playback time and playing state.
+
+  Accepted values:
+
+  - `"media"`: watch `(prefers-color-scheme: dark)`.
+  - `"class"`: watch the `dark` class on `<html>`.
+  - `{ class: "name" }`: watch a custom class on `<html>`.
+  - `"data-theme"`: watch the `data-theme` attribute on `<html>`.
+  - `{ attribute: "name" }`: watch a custom attribute on `<html>`.
+  - `false`: disable theme watching.
+</ParamField>
+
+<ParamField body="class" type="string">
+  Class name applied to the rendered `<astro-asciinema>` custom element.
+</ParamField>
+
+## Example
+
+```astro
+<Asciinema
+	src={Demo}
+	class="terminal-recording"
+	options={{
+		controls: true,
+		cursorMode: "hidden",
+		theme: "site",
+	}}
+	theme-source="class"
+/>
+```
+
+For custom light and dark palettes, see [Theme
+watching](/guides/theme-watching).

@@ -1,0 +1,173 @@
+---
+import type { Options } from "asciinema-player";
+import "asciinema-player/dist/bundle/asciinema-player.css";
+
+export interface Props {
+	/** URL of an asciicast or another recording format supported by asciinema player. */
+	src: string;
+	/** Serializable asciinema player options. */
+	options?: Omit<Options, "logger">;
+	/** Source to watch for theme changes. @default "media" */
+	"theme-source"?:
+		| "media"
+		| "class"
+		| "data-theme"
+		| { class: string }
+		| { attribute: string }
+		| false;
+	class?: string;
+}
+---
+
+<astro-asciinema
+	class={Astro.props.class}
+	data-src={Astro.props.src}
+	data-options={JSON.stringify(Astro.props.options ?? {})}
+	data-theme-source={JSON.stringify(Astro.props["theme-source"] ?? "media")}
+>
+	<div data-player></div>
+	<noscript>
+		<a href={Astro.props.src}>Download the terminal recording</a>
+	</noscript>
+</astro-asciinema>
+
+<script>
+	import * as AsciinemaPlayer from "asciinema-player";
+	import type { Options, Player } from "asciinema-player";
+
+	class AstroAsciinemaElement extends HTMLElement {
+		#player?: Player;
+		#container?: HTMLElement;
+		#src?: string;
+		#options?: Options;
+		#stopWatchingTheme?: () => void;
+		#isPlaying = false;
+
+		connectedCallback() {
+			this.#container =
+				this.querySelector<HTMLElement>("[data-player]") ?? undefined;
+			this.#src = this.dataset.src;
+			this.#options = JSON.parse(this.dataset.options ?? "{}") as Options;
+
+			if (!this.#container || !this.#src || this.#player) return;
+
+			this.#mountPlayer();
+			this.#watchTheme();
+		}
+
+		#mountPlayer(options = this.#options) {
+			if (!this.#container || !this.#src || !options) return;
+
+			const player = AsciinemaPlayer.create(
+				this.#src,
+				this.#container,
+				options,
+			);
+			this.#player = player;
+
+			player.addEventListener("playing", () => {
+				if (this.#player === player) this.#isPlaying = true;
+			});
+			player.addEventListener("pause", () => {
+				if (this.#player === player) this.#isPlaying = false;
+			});
+			player.addEventListener("ended", () => {
+				if (this.#player === player) this.#isPlaying = false;
+			});
+
+			return player;
+		}
+
+		#disposePlayer() {
+			const player = this.#player;
+			if (!player) return;
+
+			player.dispose();
+			this.#player = undefined;
+			this.#isPlaying = false;
+		}
+
+		async #remount() {
+			const currentTime = this.#player?.getCurrentTime() ?? 0;
+			const resume = this.#isPlaying;
+
+			this.#disposePlayer();
+			this.#container?.replaceChildren();
+
+			const player = this.#mountPlayer({
+				...this.#options,
+				autoPlay: false,
+				autoplay: false,
+			});
+			if (!player) return;
+
+			if (currentTime > 0) await player.seek(currentTime);
+			if (this.#isCurrentPlayer(player) && resume) await player.play();
+		}
+
+		#isCurrentPlayer(player: Player) {
+			return this.#player === player;
+		}
+
+		#watchTheme() {
+			const value = this.dataset.themeSource;
+			if (!value) return;
+
+			const source = JSON.parse(value) as
+				| string
+				| false
+				| { class?: string; attribute?: string };
+			if (source === false) return;
+
+			if (source === "media") {
+				const media = window.matchMedia("(prefers-color-scheme: dark)");
+				const remount = () => void this.#remount();
+
+				media.addEventListener("change", remount);
+				this.#stopWatchingTheme = () =>
+					media.removeEventListener("change", remount);
+				return;
+			}
+
+			const root = document.documentElement;
+			const attribute =
+				source === "class" || typeof source === "object" && source.class
+					? "class"
+					: source === "data-theme"
+						? "data-theme"
+						: typeof source === "object"
+							? source.attribute
+							: undefined;
+			if (!attribute) return;
+			const className =
+				typeof source === "object" && source.class
+					? source.class
+					: source === "class"
+						? "dark"
+						: undefined;
+			let hasClass = className ? root.classList.contains(className) : undefined;
+			const observer = new MutationObserver(() => {
+				if (className) {
+					const nextHasClass = root.classList.contains(className);
+					if (nextHasClass === hasClass) return;
+					hasClass = nextHasClass;
+				}
+
+				void this.#remount();
+			});
+
+			observer.observe(root, { attributes: true, attributeFilter: [attribute] });
+			this.#stopWatchingTheme = () => observer.disconnect();
+		}
+
+		disconnectedCallback() {
+			this.#stopWatchingTheme?.();
+			this.#stopWatchingTheme = undefined;
+			this.#disposePlayer();
+		}
+	}
+
+	if (!customElements.get("astro-asciinema")) {
+		customElements.define("astro-asciinema", AstroAsciinemaElement);
+	}
+</script>

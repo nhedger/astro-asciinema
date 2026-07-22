@@ -1,0 +1,47 @@
+---
+title: "Installation"
+description: "Install `astro-asciinema` in an Astro project"
+icon: "package"
+---
+
+## Requirements
+
+- Astro `7.x`
+
+## Install the package
+
+<CodeGroup>
+```bash npm
+npm install astro-asciinema
+```
+
+```bash pnpm
+pnpm add astro-asciinema
+```
+
+```bash yarn
+yarn add astro-asciinema
+```
+
+```bash Bun
+bun add astro-asciinema
+```
+</CodeGroup>
+
+## Configure Astro
+
+Add the integration to your Astro configuration.
+
+```ts astro.config.ts
+import { defineConfig } from "astro/config";
+import asciinema from "astro-asciinema";
+
+export default defineConfig({
+	integrations: [asciinema()],
+});
+```
+
+<Note>
+    The integration registers asciinema's `.cast` files as Vite assets and adds their TypeScript
+    module declaration.
+</Note>

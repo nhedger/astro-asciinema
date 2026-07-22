@@ -1,0 +1,8 @@
+allowBuilds:
+  '@scarf/scarf': true
+  esbuild: true
+  keytar: true
+  puppeteer: true
+  sharp: true
+minimumReleaseAgeExclude:
+  - astro@7.1.3

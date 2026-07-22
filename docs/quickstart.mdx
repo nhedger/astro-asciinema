@@ -1,0 +1,54 @@
+---
+title: "Quickstart"
+description: "Install astro-asciinema and embed a terminal recording in an Astro page."
+icon: "rocket"
+---
+
+## Install the package
+
+First, make sure to [install the package](./installation.mdx) in your Astro project.
+
+## Embed a recording
+
+Import the recording, then pass it to `Asciinema`:
+
+<CodeGroup>
+```astro src/pages/demo.astro
+---
+import { Asciinema } from "astro-asciinema";
+import Demo from "../recordings/demo.cast";
+---
+
+<Asciinema src={Demo} />
+```
+
+```mdx src/pages/demo.mdx
+import { Asciinema } from "astro-asciinema"
+import Demo from "../recordings/demo.cast"
+
+<Asciinema src={Demo} />
+```
+</CodeGroup>
+
+## Configure the player
+
+Pass any [Asciinema player
+option](https://docs.asciinema.org/manual/player/options/) through `options`:
+
+```astro
+<Asciinema
+	src={Demo}
+	options={{
+		autoPlay: true,
+		controls: true,
+		cursorMode: "hidden",
+		speed: 2,
+	}}
+/>
+```
+
+## Next steps
+
+- Read [Theme watching](/guides/theme-watching) when your custom terminal theme
+  follows the site's light and dark modes.
+- See the [Component reference](/reference/component) for all component props.
