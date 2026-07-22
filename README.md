@@ -12,10 +12,7 @@ disposes of it when the component leaves the document.
 
 ## Documentation
 
-- [Installation](./docs/installation.mdx)
-- [Quickstart](./docs/quickstart.mdx)
-- [Theme watching](./docs/guides/theme-watching.mdx)
-- [Component reference](./docs/reference/component.mdx)
+Read the [documentation](https://astro-asciinema.hedger.ch).
 
 ## Install
 
